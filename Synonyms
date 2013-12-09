@@ -1,0 +1,117 @@
+PUT /synonyms/?pretty=1
+{
+  "settings" : {
+     "analysis" : {
+        "filter" : {
+           "synonyms_expand" : {
+              "synonyms" : [
+                 "kantine,foodcourt,cafetaria,restaurant,cafe"
+              ],
+              "type" : "synonym"
+           },
+           "synonyms_contract" : {
+              "expand" : 0,
+              "synonyms" : [
+                 "kantine,foodcourt,cafetaria,restaurant,cafe"
+              ],
+              "type" : "synonym"
+           }
+        },
+        "analyzer" : {
+           "synonyms_expand" : {
+              "filter" : [
+                 "standard",
+                 "lowercase",
+                 "stop",
+                 "synonyms_expand"
+              ],
+              "type" : "custom",
+              "tokenizer" : "standard"
+           },
+           "synonyms_contract" : {
+              "filter" : [
+                 "standard",
+                 "lowercase",
+                 "stop",
+                 "synonyms_contract"
+              ],
+              "type" : "custom",
+              "tokenizer" : "standard"
+           }
+        }
+     }
+  },
+  "mappings" : {
+     "test" : {
+        "properties" : {
+           "text_1" : {
+              "type" : "string",
+              "analyzer" : "synonyms_expand"
+           },
+           "text_2" : {
+              "search_analyzer" : "standard",
+              "index_analyzer" : "synonyms_expand",
+              "type" : "string"
+           },
+           "text_3" : {
+              "type" : "string",
+              "analyzer" : "synonyms_contract"
+           }
+        }
+     }
+  }
+}
+PUT /synonyms/synonyms/1?pretty=1
+{
+  "text_3" : "kantine,foodcourt,cafetaria,restaurant,cafe",
+  "text_2" : "kantine,foodcourt,cafetaria,restaurant,cafe",
+  "text_1" : "kantine,foodcourt,cafetaria,restaurant,cafe"
+}
+GET /synonyms/synonyms/_search?pretty=1
+{
+  "facets" : {
+     "text_3" : {
+        "terms" : {
+           "field" : "text_3"
+        }
+     },
+     "text_1" : {
+        "terms" : {
+           "field" : "text_1"
+        }
+     },
+     "text_2" : {
+        "terms" : {
+           "field" : "text_2"
+        }
+     }
+  },
+  "size" : 0
+}
+GET /synonyms/synonyms/_search?pretty=1
+{
+  "query" : {
+     "match" : {
+        "text_1" : "cafe"
+     }
+  },
+  "explain" : 1
+}
+GET /synonyms/synonyms/_search?pretty=1
+{
+  "query" : {
+     "match" : {
+        "text_2" : "cafe"
+     }
+  },
+  "explain" : 1
+}
+GET /synonyms/synonyms/_search?pretty=1
+{
+  "query" : {
+     "match" : {
+        "text_3" : "cafe"
+     }
+  },
+  "explain" : 1
+}
